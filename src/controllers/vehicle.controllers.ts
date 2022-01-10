@@ -83,8 +83,6 @@ export const getVehicleById = async ( req: Request, res: Response ): Promise<Res
         });
     }
 
-    /* SELECT * FROM vehicles AS v
-            WHERE v.vehicle_id = ${ idVehicle }*/
     const response: QueryResult = await pool.query(`
         SELECT 
             v.*, 
@@ -108,7 +106,6 @@ export const getVehicleById = async ( req: Request, res: Response ): Promise<Res
         
     `);
 
-    console.log(response.rows[0])
     if ( response.rows[0] === undefined ){
         return res.status(400).json({
             ok: false,
@@ -134,6 +131,7 @@ export const createVehicle = async ( req: Request, res: Response ): Promise<Resp
     } = req.body;
 
 
+    // Validate transmission
     const val1: string = transmission.toLowerCase();
     const trans: string = val1.charAt(0).toUpperCase() + val1.slice(1);
     try {
@@ -161,6 +159,7 @@ export const createVehicle = async ( req: Request, res: Response ): Promise<Resp
     }
 
 
+    // Validate Type Of Vehicle
     const val2: string = typeofvehicle.toLowerCase();
     const typeVehicle: string = val2.charAt(0).toUpperCase() + val2.slice(1);
     try {
@@ -188,6 +187,7 @@ export const createVehicle = async ( req: Request, res: Response ): Promise<Resp
     }
 
 
+    // Validate Type Of Fuel
     const val3: string = typesoffuel.toLowerCase();
     const typeFuel: string = val3.charAt(0).toUpperCase() + val3.slice(1);
     try {
@@ -214,7 +214,7 @@ export const createVehicle = async ( req: Request, res: Response ): Promise<Resp
         });
     }
 
-
+    // Validate 
     const color = colour.toLowerCase();
     if ( typeof(color) != 'string' ) {
         return res.status(400).json({

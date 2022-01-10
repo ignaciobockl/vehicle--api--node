@@ -1,7 +1,7 @@
 import express from 'express';
 import dotenv from 'dotenv';
 
-import vehicleRoutes from './routes/vehicleRoutes';
+import indexRoutes from './routes/index';
 
 
 // dotenv
@@ -26,10 +26,11 @@ const normalizePort = (val: number | string): number | string | boolean => {
 // middlewares
 app.use(express.json());
 app.use(express.urlencoded({extended: false}));
+app.use(express.static('public'));
 
 
 // routes
-app.use( vehicleRoutes );
+app.use( indexRoutes );
 
 
 app.listen( normalizePort( port || 8000 ) , (): void => {
