@@ -141,16 +141,16 @@ export const createVehicle = async ( req: Request, res: Response ): Promise<Resp
         `);
 
         if ( responseTransmission.rowCount === 0 ) {
-            const types: QueryResult = await pool.query('SELECT * FROM unnest(enum_range(NULL::transmission_enum)) AS Transmission')
-        return res.status(400).json({
-            ok: false,
-            msg: `The transmission entered does not exist in the database`,
-            types: types.rows
-        });
+            const types: QueryResult = await pool.query('SELECT * FROM unnest(enum_range(NULL::transmission_enum)) AS Transmission');
+            return res.status(400).json({
+                ok: false,
+                msg: `The transmission entered does not exist in the database`,
+                types: types.rows
+             });
         }
     } catch (error) {
         console.log(error);
-        const types: QueryResult = await pool.query('SELECT * FROM unnest(enum_range(NULL::transmission_enum)) AS Transmission')
+        const types: QueryResult = await pool.query('SELECT * FROM unnest(enum_range(NULL::transmission_enum)) AS Transmission');
         return res.status(400).json({
             ok: false,
             msg: `The transmission entered does not exist in the database`,
@@ -214,7 +214,7 @@ export const createVehicle = async ( req: Request, res: Response ): Promise<Resp
         });
     }
 
-    // Validate 
+    // Validate Colour
     const color = colour.toLowerCase();
     if ( typeof(color) != 'string' ) {
         return res.status(400).json({
@@ -225,6 +225,7 @@ export const createVehicle = async ( req: Request, res: Response ): Promise<Resp
     }
 
 
+    // Validate Model Id
     if ( typeof(model_id) != 'number' ){
         return res.status(400).json({
             ok: false,
@@ -259,6 +260,7 @@ export const createVehicle = async ( req: Request, res: Response ): Promise<Resp
     }
 
 
+    // Validate Motor Id
     if ( typeof(motor_id) != 'number' ){
         return res.status(400).json({
             ok: false,
@@ -293,6 +295,7 @@ export const createVehicle = async ( req: Request, res: Response ): Promise<Resp
     }
 
 
+    // Validate Brand Id
     if ( typeof(brand_id) != 'number' ){
         return res.status(400).json({
             ok: false,
@@ -344,6 +347,7 @@ export const createVehicle = async ( req: Request, res: Response ): Promise<Resp
     `);
 
 
+    // Insert the vehicle in the database
     const response: QueryResult = await pool.query(`
         INSERT INTO vehicles ( 
             transmission, typeofvehicle, typesoffuel, colour, state, model_id, motor_id, brand_id 
@@ -352,16 +356,22 @@ export const createVehicle = async ( req: Request, res: Response ): Promise<Resp
         [ transmissionValue, typeOfVehicleValue, typeOfFuelValue, colourValue, stateDefault,
             model_id, motor_id, brand_id ]
     );
+    if ( response.rowCount === 0 ) {
+        return res.status(400).json({
+            ok: false,
+            msg: 'Error when trying to insert the vehicle'
+        });
+    }
 
     return res.status(201).json({
         ok: true,
         msg: 'the vehicle was created successfully',
         body: {
             vehicle: {
-                transmission: transmission.charAt(0).toUpperCase() + val1.slice(1),
-                typeofvehicle: typeofvehicle.charAt(0).toUpperCase() + val2.slice(1),
-                typesoffuel: typesoffuel.charAt(0).toUpperCase() + val3.slice(1),
-                colour: color.charAt(0).toUpperCase() + color.slice(1),
+                transmission: transmissionValue,
+                typeofvehicle: typeOfVehicleValue,
+                typesoffuel: typeOfFuelValue,
+                colour: colourValue,
                 state: stateDefault,
                 model: modelValue.rows,
                 motor: motorValue.rows,
@@ -370,4 +380,298 @@ export const createVehicle = async ( req: Request, res: Response ): Promise<Resp
         }
     });
     
+}
+
+
+export const updateVehicle = async( req: Request, res: Response ): Promise<Response> => {
+
+    const { id } = req.params;
+    const { transmission, typeofvehicle, typesoffuel, colour, model_id, brand_id, motor_id } = req.body;
+
+    try {
+        const exists = await pool.query(`SELECT * FROM vehicles AS v WHERE v.vehicle_id = ${ id } `);
+        if ( exists.rowCount === 0 ) {
+            return res.status(400).json({
+                ok: false,
+                msg: `Entered an invalid or non-existent 'id' in the database. Id: ${ id }`
+            });
+        }
+    } catch (error) {
+        return res.status(400).json({
+            ok: false,
+            msg: `Entered an invalid or non-existent 'id' in the database`
+        });
+    }
+
+    const stateValue: QueryResult = await pool.query(`SELECT * FROM vehicles AS v WHERE v.vehicle_id = ${ id } `);
+    if ( stateValue.rows[0].state === false ) {
+        return res.status(400).json({
+            ok: false,
+            msg: 'The vehicle you are trying to modify has been eliminated'
+        });
+    }
+
+    let transmissionValue: string = transmission.charAt(0).toUpperCase() + transmission.slice(1).toLocaleLowerCase();
+    let typeOfVehicleValue: string = typeofvehicle.charAt(0).toUpperCase() + typeofvehicle.slice(1).toLocaleLowerCase();
+    let typeOfFuelValue: string = typesoffuel.charAt(0).toUpperCase() + typesoffuel.slice(1).toLocaleLowerCase();
+
+    
+    const vehicle: QueryResult = await pool.query(`SELECT * FROM vehicles AS v WHERE v.vehicle_id = ${ id } `);
+    if ( vehicle.rowCount === 0) {
+        return res.status(400).json({
+            ok: false,
+            msg: `No vehicle was found with the id entered. Id: ${ id }`
+        });
+    } 
+
+
+    // Validate transmission
+    if ( transmission != '' ) {
+        try {
+            const responseTransmission: QueryResult = await pool.query(`
+                SELECT * FROM unnest(enum_range(NULL::transmission_enum)) 
+                WHERE unnest.transmission_enum = '${ transmissionValue }' 
+            `);
+    
+            if ( responseTransmission.rowCount === 0 ) {
+                const types: QueryResult = await pool.query('SELECT * FROM unnest(enum_range(NULL::transmission_enum)) AS Transmission');
+                return res.status(400).json({
+                    ok: false,
+                    msg: `The transmission entered does not exist in the database`,
+                    types: types.rows
+                 });
+            }
+        } catch (error) {
+            // console.log(error);
+            const types: QueryResult = await pool.query('SELECT * FROM unnest(enum_range(NULL::transmission_enum)) AS Transmission');
+            return res.status(400).json({
+                ok: false,
+                msg: `The transmission entered does not exist in the database`,
+                types: types.rows
+            });
+        }
+    } else {
+        transmissionValue = vehicle.rows[0].transmission;
+    }
+
+
+    // Validate Type Of Vehicle
+    if ( typeOfVehicleValue != '' ) {
+        try {
+            const responseTypeVehicle: QueryResult = await pool.query(`
+                SELECT * FROM unnest(enum_range(NULL::typeofvehicle_enum)) 
+                WHERE unnest.typeofvehicle_enum = '${ typeOfVehicleValue }'
+            `);
+    
+            if ( responseTypeVehicle.rowCount === 0 ) {
+                const types: QueryResult = await pool.query('SELECT * FROM unnest(enum_range(NULL::typeofvehicle_enum)) AS TypeOfVehicle');
+                return res.status(400).json({
+                ok: false,
+                msg: `The type of vehicle entered does not exist in the database. `,
+                types: types.rows
+                });
+            }
+        } catch (error) {
+            console.log(error);
+            const types: QueryResult = await pool.query('SELECT * FROM unnest(enum_range(NULL::typeofvehicle_enum)) AS TypeOfVehicle');
+            return res.status(400).json({
+                ok: false,
+                msg: `The type of vehicle entered does not exist in the database. `,
+                types: types.rows
+            });
+        }
+    } else {
+        typeOfVehicleValue = vehicle.rows[0].typeofvehicle;
+    }
+
+
+    // Validate Type Of Vehicle
+    if ( typeOfFuelValue != '' ) {
+        try {
+            const responseTypeFuel: QueryResult = await pool.query(`
+                SELECT * FROM unnest(enum_range(NULL::typesoffuel_enum)) 
+                WHERE unnest.typesoffuel_enum = '${ typeOfFuelValue }'
+            `);
+    
+            if ( responseTypeFuel.rowCount === 0 ) {
+                const types: QueryResult = await pool.query('SELECT * FROM unnest(enum_range(NULL::typesoffuel_enum)) AS TypeOfFuel');
+                return res.status(400).json({
+                ok: false,
+                msg: `The type of fuel entered does not exist in the database. `,
+                types: types.rows
+                });
+            }
+        } catch (error) {
+            console.log(error);
+            const types: QueryResult = await pool.query('SELECT * FROM unnest(enum_range(NULL::typesoffuel_enum)) AS TypeOfFuel');
+            return res.status(400).json({
+            ok: false,
+            msg: `The type of fuel entered does not exist in the database. `,
+            types: types.rows
+            });
+        }
+    } else {
+        typeOfFuelValue = vehicle.rows[0].typesoffuel;
+    }
+
+    
+    // Validate Colour
+    if ( typeof( colour ) === 'number' ) {
+        return res.status(400).json({
+            ok: false,
+            msg: `The type of value entered in the 'color' field is not valid, expected 'string'.`,
+            value: colour
+        });
+    }
+    let colourValue: string = colour.charAt(0).toUpperCase() + colour.slice(1).toLocaleLowerCase();
+    if ( colourValue === '' ) {
+        colourValue = vehicle.rows[0].colour;
+    } 
+
+
+    // Validate Model Id
+    if ( typeof(model_id) != 'number' ){
+        return res.status(400).json({
+            ok: false,
+            msg: `The type of value entered is not valid, expected 'number'..`,
+            value: model_id
+        });
+    }
+    try {
+        const responseModelId: QueryResult = await pool.query(`
+            SELECT * FROM models AS md
+            WHERE md.model_id = ${ model_id }
+        `);
+        
+        if ( responseModelId.rowCount === 0 ){
+            const types: QueryResult = await pool.query('SELECT * FROM models');
+            return res.status(400).json({
+                ok: false,
+                msg: `the value entered in the 'model_id' field does not 
+                    represent any existing value in the database.`,
+                models: types.rows
+            });
+        }
+    } catch (error) {
+        console.log(error);
+        const types: QueryResult = await pool.query('SELECT * FROM models');
+        return res.status(400).json({
+            ok: false,
+            msg: `the value entered in the 'model_id' field does not 
+                represent any existing value in the database.`,
+            models: types.rows
+        });
+    }
+
+
+    // Validate Motor Id
+    if ( typeof(motor_id) != 'number' ){
+        return res.status(400).json({
+            ok: false,
+            msg: `The type of value entered is not valid, expected 'number'.`,
+            value: motor_id
+        });
+    }
+    try {
+        const responseMotorId: QueryResult = await pool.query(`
+            SELECT * FROM motors AS mt
+            WHERE mt.motor_id = ${ motor_id }
+        `);
+        
+        if ( responseMotorId.rowCount === 0 ){
+            const types: QueryResult = await pool.query('SELECT * FROM motors');
+            return res.status(400).json({
+                ok: false,
+                msg: `the value entered in the 'motor_id' field does not 
+                    represent any existing value in the database.`,
+                models: types.rows
+            });
+        }
+    } catch (error) {
+        console.log(error);
+        const types: QueryResult = await pool.query('SELECT * FROM motors');
+        return res.status(400).json({
+            ok: false,
+            msg: `the value entered in the 'motor_id' field does not 
+                represent any existing value in the database.`,
+            models: types.rows
+        });
+    }
+
+
+    // Validate Brand Id
+    if ( typeof(brand_id) != 'number' ){
+        return res.status(400).json({
+            ok: false,
+            msg: `The type of value entered is not valid, expected 'number'.`,
+            value: brand_id
+        });
+    }
+    try {
+        const responseBrandId: QueryResult = await pool.query(`
+            SELECT * FROM brands AS br
+            WHERE br.brand_id = ${ brand_id }
+        `);
+
+        if ( responseBrandId.rowCount === 0 ){
+            const types: QueryResult = await pool.query('SELECT * FROM brands');
+            return res.status(400).json({
+                ok: false,
+                msg: `the value entered in the 'brand_id' field does not 
+                    represent any existing value in the database.`,
+                models: types.rows
+            });
+        }
+    } catch (error) {
+        console.log(error);
+        const types: QueryResult = await pool.query('SELECT * FROM brands');
+        return res.status(400).json({
+            ok: false,
+            msg: `the value entered in the 'brand_id' field does not 
+                represent any existing value in the database.`,
+            models: types.rows
+        });
+    }
+
+
+    const modelValue: QueryResult = await pool.query(`
+        SELECT * FROM models AS m WHERE m.model_id = '${ model_id }'
+    `);
+    const motorValue: QueryResult = await pool.query(`
+        SELECT * FROM motors AS m WHERE m.motor_id = '${ motor_id }'
+    `);
+    const brandValue: QueryResult = await pool.query(`
+        SELECT * FROM brands AS b WHERE b.brand_id = '${ brand_id }'
+    `);
+
+
+
+    const response: QueryResult = await pool.query(`
+        SELECT vehicles AS v 
+            SET transmission = $1, typeofvehicle = $2, typesoffuel = $3, colour = $4, model_id = $5, motor_id = $6, brand_id = $7
+            WHERE id = $8
+    `, [ transmission, typeofvehicle, typesoffuel, colour, model_id, motor_id, brand_id, id ]);
+    if ( response.rowCount === 0 ) {
+        return res.status(400).json({
+            ok: false,
+            msg: 'Error when trying to modify the vehicle'
+        });
+    }
+
+
+    return res.status(200).json({
+        ok: true,
+        msg: 'The vehicle was successfully modified',
+        body: {
+            vehicle: {
+                transmission: transmissionValue,
+                typeofvehicle: typeOfVehicleValue,
+                typesoffuel: typeOfFuelValue,
+                colour: colourValue,
+                model: modelValue.rows,
+                motor: motorValue.rows,
+                brand: brandValue.rows
+            }
+        }
+    });
 }

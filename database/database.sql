@@ -18,7 +18,7 @@ CREATE TYPE typeOfVehicle_enum AS
         'Limousine');
 
 CREATE TYPE typesOfFuel_enum AS
-    ENUM('Gasoline', 'Diesel', 'Ethanol', 'GNC', 'Electricity', 'Hydrogen', 'Biodiesel', 'Methanol',
+    ENUM('Gasoline', 'Diesel', 'Ethanol', 'Gnc', 'Electricity', 'Hydrogen', 'Biodiesel', 'Methanol',
         'Gasoline_GNC', 'Gasoline_Electricity', 'Diesel_Biodiesel');
 
 CREATE TABLE vehicles(
