@@ -647,10 +647,10 @@ export const updateVehicle = async( req: Request, res: Response ): Promise<Respo
 
 
     const response: QueryResult = await pool.query(`
-        SELECT vehicles AS v 
+        UPDATE vehicles AS v 
             SET transmission = $1, typeofvehicle = $2, typesoffuel = $3, colour = $4, model_id = $5, motor_id = $6, brand_id = $7
-            WHERE id = $8
-    `, [ transmission, typeofvehicle, typesoffuel, colour, model_id, motor_id, brand_id, id ]);
+            WHERE v.vehicle_id = ${ id }
+    `, [ transmissionValue, typeOfVehicleValue, typeOfFuelValue, colourValue, model_id, motor_id, brand_id ]);
     if ( response.rowCount === 0 ) {
         return res.status(400).json({
             ok: false,
