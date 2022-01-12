@@ -675,3 +675,88 @@ export const updateVehicle = async( req: Request, res: Response ): Promise<Respo
         }
     });
 }
+
+
+export const deleteVehicleLogical = async( req: Request, res: Response ): Promise<Response> => {
+
+    const { id } = req.params;
+    let state: boolean = true;
+
+    const vehicle: QueryResult = await pool.query(`SELECT * FROM vehicles AS v WHERE v.vehicle_id = ${ id } `);
+    if ( vehicle.rowCount === 0) {
+        return res.status(400).json({
+            ok: false,
+            msg: `No vehicle was found with the id entered. Id: ${ id }`
+        });
+    } 
+
+    if ( vehicle.rows[0].state === true ) {
+
+        state = false;
+
+        const response: QueryResult = await pool.query(` 
+            UPDATE vehicles AS v
+            SET state = $1
+            WHERE v.vehicle_id = ${ id }
+        `, [ state ]);
+
+        if ( response.rowCount === 0 ) {
+            return res.status(400).json({
+                ok: false,
+                msg: 'Error trying to remove vehicle'
+            });
+        }
+
+        return res.status(200).json({
+            ok: true,
+            msg: 'The vehicle was removed successfully'
+        });
+
+    } else {
+
+        state = true;
+
+        const response: QueryResult = await pool.query(` 
+            UPDATE vehicles AS v
+            SET state = $1
+            WHERE v.vehicle_id = ${ id }
+        `, [ state ]);
+
+        if ( response.rowCount === 0 ) {
+            return res.status(400).json({
+                ok: false,
+                msg: 'Error trying to restore the vehicle'
+            });
+        }
+
+        return res.status(200).json({
+            ok: true,
+            msg: 'The vehicle was restored correctly'
+        });
+
+    }
+}
+
+
+export const deleteVehiclePhysical = async( req: Request, res: Response ): Promise<Response> => {
+
+    const id = parseInt( req.params.id );
+
+    const vehicle: QueryResult = await pool.query(`SELECT * FROM vehicles AS v WHERE v.vehicle_id = ${ id } `);
+    if ( vehicle.rowCount === 0) {
+        return res.status(400).json({
+            ok: false,
+            msg: `No vehicle was found with the id entered. Id: ${ id }`
+        });
+    } 
+
+    const response = vehicle.rows[0];
+
+    await pool.query(`DELETE FROM vehicles AS v WHERE v.vehicle_id = ${ id }`);
+
+    return res.status(200).json({
+        ok: true,
+        msg: 'The vehicle was removed successfully',
+        vehicle: response
+    });
+}

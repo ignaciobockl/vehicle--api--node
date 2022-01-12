@@ -3,7 +3,9 @@ import {
     getVehicles, 
     getVehicleById, 
     createVehicle, 
-    updateVehicle
+    updateVehicle,
+    deleteVehicleLogical,
+    deleteVehiclePhysical
 } from '../../controllers/vehicle.controllers';
 
 
@@ -13,5 +15,7 @@ router.get('/', getVehicles);
 router.get('/:id', getVehicleById);
 router.post('/', createVehicle);
 router.put('/:id', updateVehicle);
+router.delete('/:id', deleteVehicleLogical);
+router.delete('/erased/:id', deleteVehiclePhysical);
 
 export default router;
