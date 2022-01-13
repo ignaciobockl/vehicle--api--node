@@ -79,7 +79,7 @@ export const createModel = async ( req: Request, res: Response ): Promise<Respon
     if ( response.rowCount === 0 ) {
         return res.status(400).json({
             ok: false,
-            msg: 'Error when trying to insert the vehicle'
+            msg: 'Error when trying to insert the model'
         });
     }
 
