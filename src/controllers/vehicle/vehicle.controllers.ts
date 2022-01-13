@@ -74,7 +74,6 @@ export const getVehicleById = async ( req: Request, res: Response ): Promise<Res
 
     const { id } = req.params;
     const idVehicle: number = parseInt(id);
-    console.log(idVehicle)
 
     if ( id === undefined || idVehicle.toString() === 'NaN'  ) {
         return res.status(400).json({
@@ -386,6 +385,16 @@ export const createVehicle = async ( req: Request, res: Response ): Promise<Resp
 export const updateVehicle = async( req: Request, res: Response ): Promise<Response> => {
 
     const { id } = req.params;
+
+    const idVehicle: number = parseInt(id);
+
+    if ( id === undefined || idVehicle.toString() === 'NaN'  ) {
+        return res.status(400).json({
+            ok: false,
+            msg: 'I did not enter a valid id'
+        });
+    }
+
     const { transmission, typeofvehicle, typesoffuel, colour, model_id, brand_id, motor_id } = req.body;
 
     try {
@@ -680,6 +689,15 @@ export const updateVehicle = async( req: Request, res: Response ): Promise<Respo
 export const deleteVehicleLogical = async( req: Request, res: Response ): Promise<Response> => {
 
     const { id } = req.params;
+    const idVehicle: number = parseInt(id);
+
+    if ( id === undefined || idVehicle.toString() === 'NaN'  ) {
+        return res.status(400).json({
+            ok: false,
+            msg: 'I did not enter a valid id'
+        });
+    }
+
     let state: boolean = true;
 
     const vehicle: QueryResult = await pool.query(`SELECT * FROM vehicles AS v WHERE v.vehicle_id = ${ id } `);
@@ -740,7 +758,15 @@ export const deleteVehicleLogical = async( req: Request, res: Response ): Promis
 
 export const deleteVehiclePhysical = async( req: Request, res: Response ): Promise<Response> => {
 
-    const id = parseInt( req.params.id );
+    const id: number = parseInt( req.params.id );
+
+    if ( id === undefined || id.toString() === 'NaN'  ) {
+        return res.status(400).json({
+            ok: false,
+            msg: 'I did not enter a valid id'
+        });
+    }
+
 
     const vehicle: QueryResult = await pool.query(`SELECT * FROM vehicles AS v WHERE v.vehicle_id = ${ id } `);
     if ( vehicle.rowCount === 0) {
