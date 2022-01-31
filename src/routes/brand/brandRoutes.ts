@@ -1,9 +1,11 @@
 import { Router } from 'express';
+
 import { 
     getBrands, 
     getBrandById, 
     createBrand, 
-    updateBrand
+    updateBrand,
+    deleteBrand
 } from '../../controllers/brand/brand.controllers';
 
 
@@ -15,7 +17,8 @@ router.route('/')
 
 router.route('/:id')
     .get( getBrandById )
-    .put( updateBrand );
+    .put( updateBrand )
+    .delete( deleteBrand );
 
 
 export default router;

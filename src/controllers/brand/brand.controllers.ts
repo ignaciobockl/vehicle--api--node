@@ -196,3 +196,61 @@ export const updateBrand = async ( req: Request, res: Response ): Promise<Respon
     });
 
 }
+
+export const deleteBrand = async ( req: Request, res: Response ): Promise<Response> => {
+
+    const id: number = parseInt(req.params.id);
+    let stateValue: boolean = true;
+
+    if ( id === undefined || id.toString() === 'NaN'  ) {
+        return res.status(400).json({
+            ok: false,
+            msg: 'I did not enter a valid id'
+        });
+    }
+
+    const brandResponse: QueryResult = await pool.query(`SELECT * FROM brands AS b WHERE b.brand_id = ${ id }`);
+    if ( brandResponse.rowCount === 0 ) {
+        return res.status(400).json({
+            ok: false,
+            msg: `A brand was not found in the database with the id entered. Id: ${ id }.`
+        });
+    }
+
+    if ( brandResponse.rows[0].state === true ) {
+
+        stateValue = false;
+
+        const response: QueryResult = await pool.query(`UPDATE brands AS b SET state = $1 WHERE b.brand_id = ${ id }`, [ stateValue ]);
+        if ( response.rowCount === 0 ) {
+            return res.status(400).json({
+                ok: false,
+                msg: `Error when trying to delete a brand.`
+            })
+        }
+
+        return res.status(200).json({
+            ok: true,
+            msg: `The brand was removed successfully.`
+        })
+
+    } else {
+
+        stateValue = true;
+
+        const response: QueryResult = await pool.query(`UPDATE brands AS b SET state = $1 WHERE b.brand_id = ${ id }`, [ stateValue ]);
+        if ( response.rowCount === 0 ){
+            return res.status(400).json({
+                ok: false,
+                msg: `Failed to try to restore the brand.`
+            });
+        }
+
+        return res.status(200).json({
+            ok: true,
+            msg: `The brand was restored successfully.`
+        })
+
+    }
+
+}
