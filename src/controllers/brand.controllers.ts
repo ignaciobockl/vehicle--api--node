@@ -60,39 +60,14 @@ export const createBrand = async( req: Request, res: Response ): Promise<Respons
         });
     }
 
-    if ( name.length === 0 ) {
-        return res.status(400).json({
-            ok: false,
-            msg: `The field "name" cannot be null or undefined"`,
-            value: name
-        });
-    }
-
     const nameValue: string = name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
-    const stateValue: boolean = true;
-
-    if ( nameValue === '' || nameValue.trim() === '' || nameValue.length < 3) {
-        return res.status(400).json({
-            ok: false,
-            msg: `The minimum length allowed for the 'name' field is 3.`,
-            value: name
-        });
-    }
 
     const exist: QueryResult = await pool.query(`SELECT * FROM brands AS b WHERE b.name = '${ nameValue }'`);
-    if ( exist.rows[0].name === nameValue ) {
+    if ( exist.rows[0] != undefined && exist.rows[0].name === nameValue ) {
         return res.status(400).json({
             ok: false,
             msg: `The brand already exists in the database.`,
             value: nameValue
-        });
-    }
-
-    const response: QueryResult = await pool.query(`INSERT INTO brands (name, state) VALUES ($1, $2)`, [ nameValue, stateValue ]);
-    if ( response.rowCount === 0 ) {
-        return res.status(400).json({
-            ok: false,
-            msg: 'Error when trying to insert the brand'
         });
     }
 
@@ -101,11 +76,10 @@ export const createBrand = async( req: Request, res: Response ): Promise<Respons
         msg: `The brand was created correctly.`,
         body: {
             brand: {
-                name: nameValue,
-                state: stateValue
+                name: nameValue
             }
         }
-    })
+    });
 
 }
 

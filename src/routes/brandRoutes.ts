@@ -1,4 +1,6 @@
 import { Router } from 'express';
+import { check } from 'express-validator';
+import { validateFields } from '../middlewares/validate-fields';
 
 import { 
     getBrands, 
@@ -13,7 +15,11 @@ const router = Router();
 
 router.route('/')
     .get( getBrands )
-    .post( createBrand );
+    .post( [
+        check('name', 'The brand name is required.').not().isEmpty(),
+        check('name', 'The minimum number of characters for the brand name is 3.').isLength({ min: 3 }),
+        validateFields
+    ], createBrand );
 
 router.route('/:id')
     .get( getBrandById )
