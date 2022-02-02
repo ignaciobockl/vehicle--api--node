@@ -1,8 +1,8 @@
 import { Router } from 'express';
 
-import BrandRoutes from './brandRoutes';
-import ModelRoutes from './modelRoutes';
-import VehicleRoutes from './vehicleRoutes';
+import BrandRoutes from './brand.routes';
+import ModelRoutes from './model.routes';
+import VehicleRoutes from './vehicle.routes';
 
 
 const router = Router();
