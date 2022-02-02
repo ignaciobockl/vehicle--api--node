@@ -4,6 +4,8 @@ import { pool } from '../database/database';
 
 
 
+
+
 export const getBrands = async ( req: Request, res: Response ): Promise<Response> => {
 
     const response: QueryResult = await pool.query(`SELECT * FROM brands AS b WHERE b.state = true`);
@@ -38,19 +40,20 @@ export const getBrandById = async(req: Request, res: Response): Promise<Response
         return res.status(400).json({
             ok: false,
             msg: `The brand was not found in the database with the id entered or it was removed. Id: ${id}.`
-        })
+        });
     }
 
     return res.status(200).json({
         ok: true,
         brand: response.rows
-    })
+    });
 
 }
 
 export const createBrand = async( req: Request, res: Response ): Promise<Response> => {
 
     const { name } = req.body;
+    const stateValue: boolean = true;
 
     if ( typeof(name) != 'string' ) {
         return res.status(400).json({
@@ -68,6 +71,14 @@ export const createBrand = async( req: Request, res: Response ): Promise<Respons
             ok: false,
             msg: `The brand already exists in the database.`,
             value: nameValue
+        });
+    }
+
+    const response: QueryResult = await pool.query(`INSERT INTO brands (name, state) VALUES ($1, $2)`, [ nameValue, stateValue ]);
+    if ( response.rowCount === 0 ) {
+        return res.status(400).json({
+            ok: false,
+            msg: 'Error when trying to insert the brand'
         });
     }
 
@@ -200,13 +211,13 @@ export const deleteBrand = async ( req: Request, res: Response ): Promise<Respon
             return res.status(400).json({
                 ok: false,
                 msg: `Error when trying to delete a brand.`
-            })
+            });
         }
 
         return res.status(200).json({
             ok: true,
             msg: `The brand was removed successfully.`
-        })
+        });
 
     } else {
 
@@ -223,7 +234,7 @@ export const deleteBrand = async ( req: Request, res: Response ): Promise<Respon
         return res.status(200).json({
             ok: true,
             msg: `The brand was restored successfully.`
-        })
+        });
 
     }
 
