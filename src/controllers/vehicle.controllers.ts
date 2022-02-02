@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { QueryResult } from 'pg';
-import { pool } from '../../database/database';
+import { pool } from '../database/database';
 
 
 export const getVehicles = async ( req: Request, res: Response ): Promise<Response> => {

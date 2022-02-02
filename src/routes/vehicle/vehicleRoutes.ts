@@ -6,7 +6,7 @@ import {
     updateVehicle,
     deleteVehicleLogical,
     deleteVehiclePhysical
-} from '../../controllers/vehicle/vehicle.controllers';
+} from '../../controllers/vehicle.controllers';
 
 
 const router = Router();

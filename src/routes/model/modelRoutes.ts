@@ -5,7 +5,7 @@ import {
     createModel,
     updateModel,
     deleteModelLogical
-} from '../../controllers/model/model.controllers';
+} from '../../controllers/model.controllers';
 
 
 const router = Router();
