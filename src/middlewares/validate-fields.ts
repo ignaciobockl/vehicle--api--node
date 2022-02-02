@@ -1,18 +1,18 @@
-import { Response, Request, NextFunction } from 'express';
+import { Response, Request } from 'express';
 import { validationResult } from 'express-validator'
 
 
-export const validarCampos = (req: Request, res: Response, next: NextFunction) => {
+export const validateFields = (req: Request, res: Response, next: any) => {
 
-    const errores = validationResult( req );
+    const errors = validationResult( req );
 
-    if ( !errores.isEmpty() ) {
+    if ( !errors.isEmpty() ) {
         return res.status(400).json({
             ok: false,
-            errors: errores.mapped()
+            errors: errors.mapped()
         });
     }
 
     next();
-
 }
+
